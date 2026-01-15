@@ -1,8 +1,12 @@
 use std::env; 
-use std::fs; // file reader lib
-use anyhow::Result;
+use std::fs;
+use std::hash::Hash; // file reader lib
+use anyhow::{anyhow, Result};
 use std::sync::Arc;
 use std::collections::HashMap;
+
+use crate::models::{Character, Placement};
+mod models; 
 
 /* Usage of lib.rs
 
@@ -21,13 +25,14 @@ Notes:
 
 
 */
-
+// read_file function to read contents of a file
 pub fn read_file() -> Result<String> {
     let contents = fs::read_to_string("5_letters.txt")?;
 
     Ok(contents)
 }
 
+// analyze_contents function to analyze character frequency and ranking
 pub fn analyze_contents(data: Arc<String>) -> [u8; 26] {
 
     // b'a' -> b means byte value of 'a'
@@ -72,13 +77,74 @@ pub fn analyze_contents(data: Arc<String>) -> [u8; 26] {
 
 }
 
-pub fn entry_pattern(data: Arc<String>, ranking: Arc<[u8; 26]>, start: u8) {
-    analyze_patterns(data, ranking, start.to_string());
+pub fn main_selector(found_patterns: HashMap<String, u16>) {
+    let mut choice: [Character;26] = [Character::new(' ', Placement::Unknown, 0); 26]; // main choice array
+    for i in 0..26 {
+        choice[i] = Character::new((i as u8 + b'a') as char, Placement::Unknown, 0);
+    }
 }
 
-fn analyze_patterns(data: Arc<String>, ranking: Arc<[u8; 26]>, permutation: String){
-    let mut appearances: u16 = 0;
+// entry_pattern function to analyze patterns based on initial character
+pub fn entry_pattern(data: Arc<String>, ranking: Arc<[u8; 26]>, initial: usize) -> Result<HashMap<String, u16>>{
+    let permutation = (ranking[initial] + b'a') as char; 
+    let results = analyze_patterns(data, ranking, &mut permutation.to_string()).ok_or_else(|| anyhow!("Nothing Found"))?;
+    Ok(results)
+}
 
+// recursive function to analyze patterns
+fn analyze_patterns(data: Arc<String>, ranking: Arc<[u8; 26]>, permutation: &mut String) -> Option<HashMap<String, u16>>{
+
+    let mut results = HashMap::new();
+
+    // base case
+    if permutation.len() == 1{
+        for count in 0..26 {
+            let mut new_permutation: String = permutation.clone();
+            new_permutation.push((ranking[count] + b'a') as char);
+            match analyze_patterns(data.clone(), ranking.clone(), &mut new_permutation) {
+                Some(res) => {
+                    results.extend(res);
+                },
+                None => {
+                    continue;
+                },
+            }
+        }
+
+        return Some(results);
+        
+    }
+
+    // check appearances of permutation in data
+    let mut appearances: u16 = 0;
+    for word in data.lines() {
+        if word.contains(&*permutation) {
+            appearances += 1;
+        }
+    }
+
+    // base cases
+    if appearances == 0 {
+        return None
+    } else if appearances == 1 {
+        return Some(HashMap::from([(permutation.clone(), appearances)]));
+    } 
+    else {
+        for count in 0..26 {
+            results.insert(permutation.clone(), appearances); 
+            let mut new_permutation: String = permutation.clone();
+            new_permutation.push((ranking[count] + b'a') as char);
+            match analyze_patterns(data.clone(), ranking.clone(), &mut new_permutation) {
+                Some(res) => {
+                    results.extend(res);
+                },
+                None => {
+                    continue;
+                },
+            }
+        }
+        return Some(results);
+    }
     
 
 }
