@@ -1,11 +1,9 @@
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
-mod lib;
 use memory_stats::memory_stats;
 use wordle_guesser::analyze_contents;
 use std::thread;
 use std::sync::Arc;
-
-use crate::lib::entry_pattern;
+use wordle_guesser::{Character, main_selector, read_file};
 
 // Define the greet function
 async fn greet() -> impl Responder {
@@ -26,7 +24,7 @@ async fn main() -> std::io::Result<()> {
 } */
 
 fn main() {
-    let content = Arc::new(lib::read_file().unwrap());
+    let content = Arc::new(read_file().unwrap());
     let ranking = Arc::new(analyze_contents(Arc::clone(&content)));
 
     let handle = thread::spawn(move || {
@@ -38,9 +36,9 @@ fn main() {
             let content = Arc::clone(&content);
             let ranking= Arc::clone(&ranking);
 
-            println!("analyzing one level {:?}", i);
-            println!("{:?}", entry_pattern(content, ranking, i));
-          
+            //println!("analyzing one level {:?}", i);
+            //println!("{:?}", entry_pattern(content, ranking, i, 26));
+            main_selector(content, ranking, "apple".to_string());
 
         } // thread (.join() inherent function is used to ensure that program waits for thread to finish) otherwise can use a handle variable to keep track of all threads?
 
