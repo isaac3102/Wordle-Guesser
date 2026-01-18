@@ -221,6 +221,7 @@ pub fn main_selector(data: String, answer: String) -> i32 {
 
         if first_suggestion.len() == 1 {
             println!("Only one character left to form the word.");
+            println!("Suggesting word: {}", first_suggestion[0].clone());
             check_answer(first_suggestion[0].clone(), &mut formed_word, &mut character_list, &mut attempted_characters, answer.clone());
         } else {
             println!("Multiple possible words can be formed.");
@@ -232,7 +233,7 @@ pub fn main_selector(data: String, answer: String) -> i32 {
                     continue; // or break, or return an error
                 }
             };
-            println!("Suggested word: {}", weighted_suggestion);
+            println!("Suggesting word: {}", weighted_suggestion);
             check_answer(weighted_suggestion, &mut formed_word, &mut character_list, &mut attempted_characters, answer.clone());
         
             }

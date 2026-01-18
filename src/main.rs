@@ -21,10 +21,7 @@ async fn main() -> std::io::Result<()> {
 } */
 
 fn main() {
-    //let content = read_file().unwrap();
-    //main_selector(content, "tribe".to_string());
+    let content = read_file().unwrap();
+    main_selector(content, "tribe".to_string());
 
-    test::test_words();
-
-    
 }

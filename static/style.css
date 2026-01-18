@@ -1,0 +1,130 @@
+/* GLOBAL RESET & LAYOUT */
+* {
+    box-sizing: border-box;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: sans-serif;
+    background-color: #f0f0f0;
+}
+
+/* MAIN CONTAINER: grid layout to match your sketch */
+.main-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 20px;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* --- TOP SECTION: ALPHABET --- */
+.alphabet-container {
+    border: 3px solid #333;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+
+.letter-box {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #333;
+    border-radius: 4px;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: default;
+}
+
+/* DYNAMIC STATES (Map these to your Rust "Placement" backend state) */
+.state-neutral { background-color: white; }
+.state-correct { background-color: #6aaa64; color: white; } /* Green */
+.state-present { background-color: #c9b458; color: white; } /* Yellow */
+.state-absent  { background-color: #787c7e; color: white; } /* Gray */
+
+
+/* --- BOTTOM SPLIT SECTION --- */
+.game-area {
+    display: flex;
+    flex: 1; /* Takes remaining height */
+    gap: 20px;
+    overflow: hidden; /* Prevents whole page scroll */
+}
+
+/* --- LEFT: ATTEMPTS SCROLLABLE BOX --- */
+.attempts-section {
+    flex: 2; /* Takes up 2/3rds of space */
+    border: 3px solid #333;
+    background: white;
+    border-radius: 15px; /* Sketch shows rounded corners */
+    padding: 20px;
+    overflow-y: auto; /* MAKES THIS SECTION SCROLLABLE */
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 15px;
+}
+
+.word-card {
+    border: 2px solid #555;
+    padding: 10px 15px;
+    border-radius: 8px;
+    background-color: #fafafa;
+    cursor: pointer;
+    box-shadow: 2px 2px 0px #ccc;
+    transition: transform 0.1s;
+}
+
+.word-card:active {
+    transform: translateY(2px);
+    box-shadow: none;
+}
+
+/* --- RIGHT: GUESSING / TRIES --- */
+.guessing-section {
+    flex: 1; /* Takes up 1/3rd of space */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.target-word-display {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.tries-board {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.try-row {
+    display: flex;
+    gap: 5px;
+}
+
+.char-slot {
+    width: 40px;
+    height: 40px;
+    border: 2px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    background: white;
+}

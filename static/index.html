@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust Word Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="main-container">
+        
+        <div class="alphabet-container">
+            <div class="letter-box state-correct">A</div>
+            <div class="letter-box state-absent">B</div>
+            <div class="letter-box state-neutral">C</div>
+            <div class="letter-box state-present">D</div>
+            <div class="letter-box state-neutral">E</div>
+            <div class="letter-box state-neutral">Z</div>
+        </div>
+
+        <div class="game-area">
+            
+            <div class="attempts-section">
+                <h3 style="width: 100%; margin-top: 0;">Select a Word:</h3>
+                
+                <button class="word-card">apple : 15</button>
+                <button class="word-card">bread : 10</button>
+                <button class="word-card">crane : 8</button>
+                <button class="word-card">drive : 12</button>
+                <button class="word-card">eagle : 20</button>
+                <button class="word-card">feast : 5</button>
+                <button class="word-card">ghost : 9</button>
+                <button class="word-card">house : 14</button>
+                <button class="word-card">input : 11</button>
+                <button class="word-card">juice : 19</button>
+            </div>
+
+            <div class="guessing-section">
+                
+                <div class="guessing-header">
+                    Guessing &rarr; <span id="target-word">?????</span>
+                </div>
+
+                <hr style="width: 100%; border: 1px solid #ccc;">
+
+                <div class="tries-board">
+                    <div class="try-row">
+                        <div class="char-slot state-absent">S</div>
+                        <div class="char-slot state-absent">T</div>
+                        <div class="char-slot state-correct">A</div>
+                        <div class="char-slot state-present">R</div>
+                        <div class="char-slot state-absent">T</div>
+                    </div>
+
+                    <div class="try-row">
+                        <div class="char-slot"></div>
+                        <div class="char-slot"></div>
+                        <div class="char-slot"></div>
+                        <div class="char-slot"></div>
+                        <div class="char-slot"></div>
+                    </div>
+                     </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
