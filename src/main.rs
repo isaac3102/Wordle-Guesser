@@ -26,8 +26,10 @@ async fn main() -> std::io::Result<()> {
 fn main() {
     let content = Arc::new(read_file().unwrap());
     let ranking = Arc::new(analyze_contents(Arc::clone(&content)));
+    main_selector(content, ranking, "hello".to_string());
 
-    let handle = thread::spawn(move || {
+
+    /* let handle = thread::spawn(move || {
 
         println!("Memory Usage: {:?}", memory_stats::memory_stats().unwrap());
 
@@ -44,6 +46,6 @@ fn main() {
 
     });
 
-    handle.join().expect("worker thread panicked");
+    handle.join().expect("worker thread panicked"); */
     
 }

@@ -1,6 +1,7 @@
 use std::env; 
 use std::fs;
-use std::hash::Hash; // file reader lib
+use std::hash::Hash;
+use std::vec; // file reader lib
 use anyhow::{anyhow, Result};
 use std::sync::Arc;
 use std::collections::HashMap;
@@ -17,17 +18,20 @@ pub enum Placement {
 pub struct Character {
     character: char,
     placement: Placement,
-    index: usize,
+    weightage: f32,
 }
 
 impl Character {
-    pub fn new(character: char, placement: Placement, index: usize) -> Self {
-        Character { character, placement, index }
+    pub fn new(character: char, placement: Placement) -> Self {
+        Character { character, placement, weightage: 0.0 }
     }
 
-    fn update_placement(&mut self, new_placement: Placement, new_index: usize) {
+    fn update_placement(&mut self, new_placement: Placement) {
         self.placement = new_placement;
-        self.index = new_index;
+    }
+
+    fn update_weightage(&mut self, new_weightage: f32) {
+        self.weightage = new_weightage;
     }
 
     fn get_character(&self) -> char {
@@ -38,15 +42,16 @@ impl Character {
         self.placement
     }
 
-    fn get_index(&self) -> usize {
-        self.index
+    fn get_weightage(&self) -> f32 {
+        self.weightage
     }
+
 }
 
-fn set_state(character_list: &mut [Character;26], character: char, placement: Placement, index: usize) {
+fn set_state(character_list: &mut [Character;26], character: char, placement: Placement) {
     for char_struct in character_list.iter_mut() {
         if char_struct.get_character() == character {
-            char_struct.update_placement(placement, index);
+            char_struct.update_placement(placement);
             break;
         }
     }
@@ -56,6 +61,15 @@ fn get_state(character_list: &[Character;26], character: char) -> Option<Placeme
     for char_struct in character_list.iter() {
         if char_struct.get_character() == character {
             return Some(char_struct.get_placement());
+        }
+    }
+    None
+}
+
+fn get_weightage(character_list: &[Character;26], character: char) -> Option<f32> {
+    for char_struct in character_list.iter() {
+        if char_struct.get_character() == character {
+            return Some(char_struct.get_weightage());
         }
     }
     None
@@ -80,13 +94,13 @@ Notes:
 */
 // read_file function to read contents of a file
 pub fn read_file() -> Result<String> {
-    let contents = fs::read_to_string("5_letters.txt")?;
+    let contents = fs::read_to_string("words.txt")?;
 
     Ok(contents)
 }
 
 // analyze_contents function to analyze character frequency and ranking
-pub fn analyze_contents(data: Arc<String>) -> [Character; 26] {
+pub fn analyze_contents(data: Arc<String>) -> [u8; 26] {
 
     // b'a' -> b means byte value of 'a'
 
@@ -108,7 +122,6 @@ pub fn analyze_contents(data: Arc<String>) -> [Character; 26] {
            
         }
     }
-    println!("{:?}", char_count);
     for count in 0..26 {
         let mut principal:u16 = char_count[count];
         let mut swap = count;
@@ -123,17 +136,68 @@ pub fn analyze_contents(data: Arc<String>) -> [Character; 26] {
             char_count.swap(count, swap);
         }
     }
-    let mut character_list: [Character;26] = [Character::new(' ', Placement::Unknown, 0); 26];
-    for index in 0..26 {
-        character_list[index] = Character::new((char_ranking[index] + b'a') as char, Placement::Unknown, 0);
-        
-    }
-    return character_list;
+    return char_ranking;
 
 }
 
+fn create_list(placement: Placement, character_list: [Character;26]) -> Vec<char> {
+    let mut results: Vec<char> = Vec::new();
+    for char_struct in character_list.iter() {
+        if char_struct.get_placement() == placement {
+            results.push(char_struct.get_character());
+        }
+    } return results;
+}
+
+fn char_appearances(data:Arc<String>, character_list: [Character;26], formed_word: [char;5], attempted_characters: HashMap<char, Vec<usize>>) -> HashMap<char, u16> {
+    let mut results: HashMap<char, u16> = HashMap::new();
+    let absent_chars = create_list(Placement::Absent, character_list.clone());
+    let correct_chars = create_list(Placement::Correct, character_list.clone());
+    let present_chars = create_list(Placement::Present, character_list.clone());
+    let mut skip: bool = false;
+    for word in data.lines() {
+        if word.chars().any(|c| absent_chars.contains(&c)) {
+            continue;
+        } else if correct_chars.len() > 0 {
+            for (i, c) in formed_word.iter().enumerate() {
+                if *c != '_' { // if its not an underscore
+                    if word.chars().nth(i).unwrap() != *c { // then check if it matches the position, if it doesnt skip the word
+                        skip = true;
+                        break;
+                    } 
+                }
+            }
+        } else if present_chars.len() > 0 {
+            for c in present_chars.iter() {
+                if let Some(position_list) = attempted_characters.get(c) {
+                    for pos in position_list.iter() {
+                        if let Some(ch) = word.chars().nth(*pos) {
+                            if ch == *c {
+                                skip = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    
+        if skip == true {
+            skip = false;
+            continue;
+        } else {
+             for c in word.chars() {
+                *results.entry(c).or_insert(0) += 1;
+            }
+        }
+           
+        }
+        
+     return results;
+}
+
 // main_selector function to select main characters (currently a placeholder)
-pub fn main_selector(data: Arc<String>, ranking: Arc<[Character; 26]>, answer: String) {
+pub fn main_selector(data: Arc<String>, ranking: Arc<[u8; 26]>, answer: String) {
     
     /* 
     
@@ -145,148 +209,182 @@ pub fn main_selector(data: Arc<String>, ranking: Arc<[Character; 26]>, answer: S
 
 
      */
-    let mut character_list: [Character;26] = *ranking.clone();
-    let mut word: [Character;5] = [Character::new(' ', Placement::Unknown, 0); 5];
-
-    set_state(&mut character_list, 'a', Placement::Absent, 0);
-    set_state(&mut character_list, 'l', Placement::Absent, 2);
-    set_state(&mut character_list, 's', Placement::Absent, 4);
-    set_state(&mut character_list, 'b', Placement::Absent, 4);
-    set_state(&mut character_list, 'n', Placement::Absent, 4);
-    set_state(&mut character_list, 't', Placement::Absent, 4);
-    set_state(&mut character_list, 'c', Placement::Absent, 4);
-    set_state(&mut character_list, 'd', Placement::Absent, 0);
-    set_state(&mut character_list, 'v', Placement::Absent, 0);
-
-    match form_word(data.clone(), character_list.clone(), [Character::new('_', Placement::Unknown, 0),
-    Character::new('_', Placement::Unknown, 1), Character::new('e', Placement::Correct, 2),
-    Character::new('r', Placement::Correct, 3), Character::new('y', Placement::Correct, 4)]) {
+    let mut character_list: [Character;26] = [Character::new('a', Placement::Unknown); 26];
+    for i in 0..26 {
+        character_list[i as usize] = Character::new((ranking[i as usize] + b'a') as char, Placement::Unknown);
+    }
+    let mut formed_word: [char;5] = ['_';5];
+    let mut attempted_characters: HashMap<char, Vec<usize>> = HashMap::new();
+    /* match form_word(data.clone(), character_list.clone(), [Character::new('s', Placement::Unknown, 0),
+    Character::new('a', Placement::Unknown, 1), Character::new('a', Placement::Unknown, 2),
+    Character::new('e', Placement::Unknown, 3), Character::new('s', Placement::Unknown, 4)]) {
         Some(word) => println!("Formed word: {}", word),
         None => println!("No word could be formed with the given characters."),
-    }   
+    }    */
+
+    let mut counter = 0;
+
+    while formed_word != answer.chars().collect::<Vec<char>>()[..5] {
+        let appearances = char_appearances(data.clone(), character_list.clone(), formed_word.clone(), attempted_characters.clone());
+        assign_weightage(&mut character_list, appearances);
+
+        let first_suggestion = form_word(data.clone(), character_list.clone(), attempted_characters.clone(), formed_word.clone()).unwrap();
+
+        if first_suggestion.len() == 1 {
+            println!("Only one character left to form the word.");
+            check_answer(first_suggestion[0].clone(), &mut formed_word, &mut character_list, &mut attempted_characters, answer.clone());
+        } else {
+            println!("Multiple possible words can be formed.");
+            let suggestions = provide_suggestions(data.clone(), character_list.clone(), &mut attempted_characters);
+            let weighted_suggestion = suggestions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).unwrap().0.clone();
+           println!("Suggested word: {}", weighted_suggestion);
+            check_answer(weighted_suggestion, &mut formed_word, &mut character_list, &mut attempted_characters, answer.clone());
+        }
+        counter += 1;
+    }
+
+    println!("Solved the Wordle in {} attempts!", counter);
 
 }
 
-// given a list of specific characters and their placements, form a word
-fn form_word(data: Arc<String>, character_list: [Character;26], letters: [Character;5]) -> Option<String> {
-    let mut formed_word: Vec<u8> = vec![b'_'; 5]; 
-    let mut checked:u8 = 0;
-    let mut full:bool = true;
-    for word in data.lines() {
-        println!("Checking word: {}", word);
-        for char in &letters {
-            // check first for correct placements
-            if char.get_placement() == Placement::Correct {
-                match position_locator(word.to_string(), char.get_character()) {
-                    Some(c) => {
-                        if c.get_index() != char.get_index() { // if index does not match, break
-                            full = true;
-                            checked = 0;
-                            formed_word = vec![b'_'; 5];
-                            break;
-                        } else {
-                            formed_word[char.get_index() as usize] = char.get_character() as u8;
-                            checked += 1;
-                        }
-                    },
-                    None => {
-                        full = true;
-                        checked = 0;
-                        formed_word = vec![b'_'; 5];
-                        break;
-                    },
-                }
-            } 
-            else if char.get_placement() == Placement::Present {
-                match position_locator(word.to_string(), char.get_character()) {
-                    Some(c) => {
-                        if c.get_index() != char.get_index() { // if index does not match, allow
-                            checked += 1;
-                        } else {
-                            full = true;
-                            checked = 0;
-                            formed_word = vec![b'_'; 5];
-                            break;
-                        }
-                    },
-                    None => {
-                        full = true;
-                        checked = 0;
-                        formed_word = vec![b'_'; 5];
-                        break;
-                    },
-                }
+fn check_answer(attempt: String, formed_word: &mut [char;5], character_list: &mut [Character;26], attempted_characters: &mut HashMap<char, Vec<usize>>, answer: String){
+    for (i, c) in attempt.chars().enumerate() {
+        if answer.contains(c) {
+            if answer.chars().nth(i).unwrap() == c {
+                 set_state(character_list, c, Placement::Correct);
+                formed_word[i] = c;
+            } else {
+                set_state(character_list, c, Placement::Present);
+                attempted_characters.entry(c).or_insert(Vec::new()).push(i);
+
             }
-            else { // if its not correct, check if its inside
-                if char.get_character() == '_' {
-                    checked += 1;
-                    full = false;
-                    continue;
-                } else {
-                    match position_locator(word.to_string(), char.get_character()){
-                    Some(c) => {
-                        println!("Found character {} at index {}", char.get_character(), c.get_index());
-                        println!("formed_word before: {:?}", String::from_utf8(formed_word.clone()).unwrap());
-                        if formed_word[c.get_index() as usize] == b'_' { // if empty
-                            formed_word[c.get_index() as usize] = char.get_character() as u8;
-                            checked += 1;
-                        } 
-                        else if formed_word[c.get_index() as usize] == char.get_character() as u8 {
-                            formed_word[c.get_index() as usize + 1] = char.get_character() as u8;
-                            checked += 1;
+        }
+         else {
+            set_state(character_list, c, Placement::Absent);
+        }
+    }
+}
 
-                        }
-                        else {
-                            full = true;
-                            checked = 0;
-                            formed_word = vec![b'_'; 5];
-                            break;
-                        }                  
-                    
-                      },
-                    None => {
-                        full = true;
-                        checked = 0;
-                        formed_word = vec![b'_'; 5];
-                        break;
-                }
+// takes in list of character and their appearances, 
+fn assign_weightage(character_list: &mut [Character;26], appearances: HashMap<char, u16>) {
+    let min = appearances.values().min().unwrap_or(&1);
+    let max = appearances.values().max().unwrap_or(&1);
+    for char_struct in character_list.iter_mut() {
+        if char_struct.get_placement() == Placement::Absent {
+            char_struct.update_weightage(-1.0);
+        } else if char_struct.get_placement() == Placement::Correct {
+            char_struct.update_weightage(0.0);
+        } 
+        else {
+            let count = appearances.get(&char_struct.get_character()).unwrap_or(&0);
+            if count == &0 {
+                char_struct.update_weightage(-1.0);
+                char_struct.update_placement(Placement::Absent);
+                continue;
+            } else {
+                let weightage = (*count as f32 - *min as f32) / (*max as f32 - *min as f32);
+                char_struct.update_weightage(weightage);
             }
-                }
-
-                    
-                }
-                
-
-        
             
         }
-
-        if checked == 5 {
-            if full == true {
-                return Some(String::from_utf8(formed_word).unwrap());
-            }
-            else {
-                let mut skip = false;
-                for i in word.chars() {
-                    if get_state(&character_list, i) == Some(Placement::Absent) {   
-                        println!("Character {} is marked absent, skipping word {}", i, word);
-                        skip = true;
-                        continue;
-                    }
-                } if skip != true {
-                    return Some(word.to_string());
-                } else {
-                    full = true;
-                        checked = 0;
-                        formed_word = vec![b'_'; 5];
-                
-                }     
-                
-            }
-        }
-    
     }
-    return None;
+}
+
+/*
+
+Based on the character list and their weightages, assign values to the words in the data and provide suggestions accordingly.
+
+Logic:
+
+An absent character will have a value of -1.0
+A correct character will have a value of 0.0 (since we already know it is correct and dont need to suggest words with it)
+A present character will have a value between 0.0 and 1.0 based on its frequency in the remaining possible words.
+A unknown character will have a value between 0.0 and 1.0 based on its frequency in the remaining possible words.
+
+Any word that contains duplicate characters e.g. hello will only count the weightage of each character once.
+*/
+fn provide_suggestions(data: Arc<String>, character_list: [Character;26], attempted_characters: &mut HashMap<char, Vec<usize>>) -> HashMap<String, f32> {
+    let mut suggestions: HashMap<String, f32> = HashMap::new();
+    let present_chars = create_list(Placement::Present, character_list.clone());
+    for word in data.lines() {
+        let mut in_word: Vec<char> = Vec::new(); // to track characters that are in the word
+        let mut value_of_word: f32 = 0.0;
+        for c in word.chars() { // for each character in the word
+            if in_word.contains(&c) {
+                continue; // skip if already counted
+            } else {
+                if let Some(weightage) = get_weightage(&character_list, c) {
+                value_of_word += weightage;
+            }
+            }
+            in_word.push(c); // add character to in_word list
+        }
+        let mut skip = false;
+        if present_chars.len() > 0 { // if there are present characters, check their positions
+            for c in present_chars.iter() {
+                let position_list = attempted_characters.get(c).unwrap();
+                for pos in position_list.iter() {
+                    if word.chars().nth(*pos).unwrap() == *c {
+                        skip = true;
+                        break;
+                    }
+            }
+            } if skip != true {
+            suggestions.insert(word.to_string(), value_of_word);
+            }
+        } else {    suggestions.insert(word.to_string(), value_of_word);}       
+    }
+    suggestions
+}
+
+// given a list of specific characters and their placements, form a word
+fn form_word(data: Arc<String>, character_list: [Character;26], attempted: HashMap<char, Vec<usize>>, formed_word: [char;5]) -> Option<Vec<String>> {
+    let mut suggestions: Vec<String> = Vec::new();
+    let present_chars = create_list(Placement::Present, character_list.clone());
+    let correct_chars = create_list(Placement::Correct, character_list.clone());
+    let absent_chars = create_list(Placement::Absent, character_list.clone());
+    for word in data.lines() {
+        if word.chars().any(|c| absent_chars.contains(&c)) {
+            continue;
+        } else {
+            let mut skip_word = false;
+            // check first for correct placements
+            if correct_chars.len() > 0 {
+                for (i, c) in formed_word.iter().enumerate() {
+                    if *c != '_' { // if not blank
+                        if word.chars().nth(i).unwrap() != *c { // if doesnt match, dont use this word
+                            skip_word = true;
+                            break;
+                        } 
+                    }
+                }
+            } 
+            // then check for present placements and ignore words that had them in the old position
+            if !skip_word && present_chars.len() > 0 {
+                for c in present_chars.iter() {
+                    // store old positions in position_list then grab character in possible word at those positions
+                    if let Some(position_list) = attempted.get(c) {
+                        for pos in position_list.iter() {
+                            if let Some(ch) = word.chars().nth(*pos) {
+                                if ch == *c { // if it is then skip this word
+                                    skip_word = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if skip_word {
+                        break;
+                    }
+                }
+            }
+            // by this point, if code has not set skip_word, then its a possible word
+            if !skip_word {
+                suggestions.push(word.to_string());
+            }
+           }
+    }
+    return Some(suggestions);
 }
 
 // entry_pattern function to analyze patterns based on initial character
@@ -308,7 +406,7 @@ pub fn entry_pattern(data: Arc<String>, ranking: [Character; 26], initial: usize
 fn position_locator(word: String, character: char) -> Option<Character> {
     for (i, c) in word.chars().enumerate() {
         if c == character {
-            return Some(Character::new(c, Placement::Present, i));
+            return Some(Character::new(c, Placement::Present));
         }
     } return None;
 }
@@ -367,7 +465,7 @@ fn analyze_patterns(data: Arc<String>, ranking: [Character;26], permutation: &mu
     } 
     else {
         for count in 0..limiter {
-            if (ranking[count].get_placement() == Placement::Absent) {
+            if ranking[count].get_placement() == Placement::Absent {
                 continue;
             }
             results.insert(permutation.clone(), appearances); 
