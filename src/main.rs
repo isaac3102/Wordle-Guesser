@@ -20,7 +20,7 @@ async fn main() -> std::io::Result<()> {
 
 fn main() {
     let content = Arc::new(read_file().unwrap());
-    main_selector(content, "after".to_string());
+    main_selector(content, "adage".to_string());
 
 
     /* let handle = thread::spawn(move || {

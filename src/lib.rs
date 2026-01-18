@@ -302,33 +302,32 @@ fn provide_suggestions(data: Arc<String>, character_list: [Character;26], attemp
     for word in data.lines() {
         let mut in_word: Vec<char> = Vec::new(); // to track characters that are in the word
         let mut value_of_word: f32 = 0.0;
-        for c in word.chars() { // for each character in the word
+        for (i, c) in word.chars().enumerate() { // for each character in the word
             if in_word.contains(&c) {
                 continue; // skip if already counted
             } else {
-                if let Some(weightage) = get_weightage(&character_list, c) {
-                value_of_word += weightage;
+                if present_chars.contains(&c) { // if the character is present, check if the position has been attempted before
+                    // get all attempted positions for this character
+                    for pos in attempted_characters.get(&c).unwrap_or(&Vec::new()).iter() {
+                        if *pos == i {
+                            continue; // skip if position matches attempted position
+                        }}
+                } else {
+                    if let Some(weightage) = get_weightage(&character_list, c) {
+                    value_of_word += weightage;
+                    }
+                }
+                
             }
-            }
+            
             in_word.push(c); // add character to in_word list
         }
-        let mut skip = false;
-        if present_chars.len() > 0 { // if there are present characters, check their positions
-            for c in present_chars.iter() {
-                let position_list = attempted_characters.get(c).unwrap();
-                for pos in position_list.iter() {
-                    if word.chars().nth(*pos).unwrap() == *c {
-                        skip = true;
-                        break;
-                    }
-            }
-            } if skip != true {
-            suggestions.insert(word.to_string(), value_of_word);
-            }
-        } else {    suggestions.insert(word.to_string(), value_of_word);}       
+        suggestions.insert(word.to_string(), value_of_word);
+        }
+        suggestions
     }
-    suggestions
-}
+    
+
 
 // given a list of specific characters and their placements, form a word
 fn form_word(data: Arc<String>, character_list: [Character;26], attempted: HashMap<char, Vec<usize>>, formed_word: [char;5]) -> Option<Vec<String>> {
