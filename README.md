@@ -12,6 +12,7 @@ The algorithm uses a .txt file that contains 5 letter words used in the game Wor
 *character refers to letters*
 
 The algorithm solves the wordle by using information based on:
+
     - how often a character appears
     - whether a character is absent from the word (*Absent*)
     - whether a present character's position is known (*Correct*)
