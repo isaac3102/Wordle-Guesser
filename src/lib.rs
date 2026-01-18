@@ -101,7 +101,7 @@ pub fn read_file() -> Result<String> {
 
 // not used currently
 // analyze_contents function to analyze character frequency and ranking
-pub fn analyze_contents(data: Arc<String>) -> [u8; 26] {
+pub fn analyze_contents(data: String) -> [u8; 26] {
 
     // b'a' -> b means byte value of 'a'
 
@@ -152,7 +152,7 @@ fn create_list(placement: Placement, character_list: [Character;26]) -> Vec<char
 }
 
 // count character appearances in remaining possible words
-fn char_appearances(data:Arc<String>, character_list: [Character;26], formed_word: [char;5], attempted_characters: HashMap<char, Vec<usize>>) -> HashMap<char, u16> {
+fn char_appearances(data:String, character_list: [Character;26], formed_word: [char;5], attempted_characters: HashMap<char, Vec<usize>>) -> HashMap<char, u16> {
     let mut results: HashMap<char, u16> = HashMap::new();
     let absent_chars = create_list(Placement::Absent, character_list.clone());
     let correct_chars = create_list(Placement::Correct, character_list.clone());
@@ -200,7 +200,7 @@ fn char_appearances(data:Arc<String>, character_list: [Character;26], formed_wor
 }
 
 // main_selector function to select main characters (currently a placeholder)
-pub fn main_selector(data: Arc<String>, answer: String) {
+pub fn main_selector(data: String, answer: String) {
     
     let mut character_list: [Character;26] = [Character::new('a', Placement::Unknown); 26];
     for i in 0..26 {
@@ -296,7 +296,7 @@ A unknown character will have a value between 0.0 and 1.0 based on its frequency
 
 Any word that contains duplicate characters e.g. hello will only count the weightage of each character once.
 */
-fn provide_suggestions(data: Arc<String>, character_list: [Character;26], attempted_characters: &mut HashMap<char, Vec<usize>>) -> HashMap<String, f32> {
+fn provide_suggestions(data: String, character_list: [Character;26], attempted_characters: &mut HashMap<char, Vec<usize>>) -> HashMap<String, f32> {
     let mut suggestions: HashMap<String, f32> = HashMap::new();
     let present_chars = create_list(Placement::Present, character_list.clone());
     for word in data.lines() {
@@ -330,11 +330,9 @@ fn provide_suggestions(data: Arc<String>, character_list: [Character;26], attemp
 
 
 // given a list of specific characters and their placements, form a word
-fn form_word(data: Arc<String>, character_list: [Character;26], attempted: HashMap<char, Vec<usize>>, formed_word: [char;5]) -> Option<Vec<String>> {
+fn form_word(data: String, character_list: [Character;26], attempted: HashMap<char, Vec<usize>>, formed_word: [char;5]) -> Option<Vec<String>> {
     let mut suggestions: Vec<String> = Vec::new();
     let present_chars = create_list(Placement::Present, character_list.clone());
-    println!("character list: {:?}", character_list);
-    println!("Present chars: {:?}", present_chars);
     let correct_chars = create_list(Placement::Correct, character_list.clone());
     let absent_chars = create_list(Placement::Absent, character_list.clone());
     for word in data.lines() {
@@ -387,7 +385,7 @@ fn form_word(data: Arc<String>, character_list: [Character;26], attempted: HashM
 }
 
 // entry_pattern function to analyze patterns based on initial character
-pub fn entry_pattern(data: Arc<String>, ranking: [Character; 26], initial: usize, limiter: usize) -> Result<HashMap<String, u16>>{
+pub fn entry_pattern(data: String, ranking: [Character; 26], initial: usize, limiter: usize) -> Result<HashMap<String, u16>>{
     let permutation = ranking[initial].get_character().to_string(); 
     let results = analyze_patterns(data, ranking, &mut permutation.to_string(), limiter).ok_or_else(|| anyhow!("Nothing Found"))?;
     let max_entry = results.iter().max_by_key(|&(_, count)| count);
@@ -422,7 +420,7 @@ fn is_unique(word: String) -> bool {
 }
 
 // recursive function to analyze patterns
-fn analyze_patterns(data: Arc<String>, ranking: [Character;26], permutation: &mut String, limiter: usize) -> Option<HashMap<String, u16>>{
+fn analyze_patterns(data: String, ranking: [Character;26], permutation: &mut String, limiter: usize) -> Option<HashMap<String, u16>>{
 
     let mut results = HashMap::new();
 

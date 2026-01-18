@@ -19,27 +19,7 @@ async fn main() -> std::io::Result<()> {
 } */
 
 fn main() {
-    let content = Arc::new(read_file().unwrap());
-    main_selector(content, "after".to_string());
-
-
-    /* let handle = thread::spawn(move || {
-
-        println!("Memory Usage: {:?}", memory_stats::memory_stats().unwrap());
-
-        for i in 0..26{
-    
-            let content = Arc::clone(&content);
-            let ranking= Arc::clone(&ranking);
-
-            //println!("analyzing one level {:?}", i);
-            //println!("{:?}", entry_pattern(content, ranking, i, 26));
-            main_selector(content, ranking, "apple".to_string());
-
-        } // thread (.join() inherent function is used to ensure that program waits for thread to finish) otherwise can use a handle variable to keep track of all threads?
-
-    });
-
-    handle.join().expect("worker thread panicked"); */
+    let content = read_file().unwrap();
+    main_selector(content, "ennui".to_string());
     
 }
