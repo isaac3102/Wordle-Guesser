@@ -20,16 +20,16 @@ The algorithm solves the wordle by using information based on:
 With the information above, we can assign a value to each character.
 
 > Assigned Values
->> Absent Characters: -1.0
->> Correct Characters (Present and Known Position): 0.0
->> Unknown and Present (Unknown Position): 0.0 - 1.0
->> *Further explanation under function assign_weightage()*
+>> - Absent Characters: -1.0
+>> - Correct Characters (Present and Known Position): 0.0
+>> - Unknown and Present (Unknown Position): 0.0 - 1.0
+>> - *Further explanation under function assign_weightage()*
 
 
 Each word is then given a value based on the values of their characters
 > *This makes it so that words are not completely ruled out of being suggested but instead ***less valuable*** to be used*
 
-However, some words consist of **unique** permutations of characters as such before suggesting a word based on its value, we attempt to form a word with known characters.
+However, some words consist of **unique** permutations of characters - as such before suggesting a word based on its value, we attempt to form a word with known characters.
 
 If a **single word** is formed, then its most likely the correct answer.
 Otherwise, we carry on and suggest the word that has the **highest value**.
@@ -37,8 +37,9 @@ Otherwise, we carry on and suggest the word that has the **highest value**.
 ## Functions related to main logic
 
 **main_selector()**
-> This function is the kickoff point of the algorithm
+This function is the kickoff point of the algorithm
 > Takes in a list of words and the answer
+
 > Code Flow:
 >> 1. count the number of times a character appears  
 >> 2. revise whether a character is known or absent
@@ -49,9 +50,17 @@ Otherwise, we carry on and suggest the word that has the **highest value**.
 >> 7. repeat until
 
 **char_appearances()**
->  
+This function counts the number of times a character appears in a word
+>  Takes in a list of words, list of characters, word that has been formed so far and a list of present characters and their positions
+
+> Returns a HashMap of characters and the number of times they appear
+
+> Code Flow:
 
 **revise_placement()**
+This function revises whether a character is present or absent
+
+**It should be used after the number of times a character appears has been counted**
 >
 
 **assign_weightage()**
