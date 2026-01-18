@@ -13,18 +13,17 @@ The algorithm uses a .txt file that contains 5 letter words used in the game Wor
 
 The algorithm solves the wordle by using information based on:
 
-    - how often a character appears
-    - whether a character is absent from the word (*Absent*)
-    - whether a present character's position is known (*Correct*)
-    - whether a present character's incorrect position is known (*present*)
+-   how often a character appears
+-   whether a character is absent from the word (*Absent*)
+-   whether a present character's position is known (*Correct*)
+-   whether a present character's incorrect position is known (*present*)
 
 With the information above, we can assign a value to each character.
 
-> Assigned Values
->> - Absent Characters: -1.0
->> - Correct Characters (Present and Known Position): 0.0
->> - Unknown and Present (Unknown Position): 0.0 - 1.0
->> - *Further explanation under function assign_weightage()*
+> - Absent Characters: -1.0
+> - Correct Characters (Present and Known Position): 0.0
+> - Unknown and Present (Unknown Position): 0.0 - 1.0
+> - *Further explanation under function assign_weightage()*
 
 
 Each word is then given a value based on the values of their characters
@@ -38,12 +37,14 @@ Otherwise, we carry on and suggest the word that has the **highest value**.
 ## Data Types
 
 **Character**
+
 Custom struct that holds the following:
 - character: Char
 - placement: Placement
 - weightage: f32
 
 **Placement**
+
 Custom enum that can be:
 - Unknown
 - Absent
@@ -57,6 +58,7 @@ Additionally, it is used to hold its value (weightage) which will be used to det
 ## Main Functions
 
 **main_selector()**
+
 This function is the kickoff point of the algorithm
 
 Takes in a list of words and the answer and attempts to guess the word
@@ -70,7 +72,10 @@ Code Flow:
 > 6.    else, take word with the highest value
 > 7.    repeat until
 
+
+
 **char_appearances()**
+
 This function counts the number of times a character appears in a word
 
 Takes in a list of words, list of characters, word that has been formed so far and a list of present characters and their positions
@@ -82,7 +87,10 @@ Code Flow:
 > 2.    Skip a word if it contains an absent character, a present character in the wrong position and if a known character is in the wrong position
 > 3.    Otherwise, count the characters that appear in the word
 
+
+
 **revise_placement()**
+
 This function revises whether a character is present or absent
 ***It should be used after the number of times a character appears has been counted***
 
@@ -94,7 +102,10 @@ Code Flow:
 
 *As words that contain present characters in the wrong position and absent characters are ignored characters that aren't counted will most likely be absent*
 
+
+
 **assign_weightage()**
+
 This function assigns a value to the character based on the number of times it will appear
 
 > Modifies the values of characters in the given list of Characters
@@ -104,7 +115,10 @@ Code Flow:
 > 2.    Assign a value of 0.0 if the character is already in the correct place (Correct)
 > 3.    Otherwise, assign a normalized value of 0.0 - 1.0 (normalized with min-max) 
 
+
+
 **provide_suggestion()**
+
 This function generates a HashMap of (word: value) to provide suggestions on what the next best word is
 
 > Returns a HashMap of (word: value)
@@ -113,7 +127,9 @@ Code Flow:
 > 1.    Loop through each word in the given word list and sum up the value of all unique characters
 
 
+
 **check_answer()**
+
 This function modifies any given list of Characters
 
 > Modifies the placement of characters based on the attempted answer and attempted list of positions
@@ -129,16 +145,16 @@ Smaller functions used to help the Main Functions work
 
 
 **read_file()**
-This function reads any given text file and stores it as a String
+: This function reads any given text file and stores it as a String
 
 **create_list()**
-Creates a list of Characters based on whether its Absent, Present or Correct
+: Creates a list of Characters based on whether its Absent, Present or Correct
 
 **set_weightage()**
-Set value of any given Character in a given List of Characters
+: Set value of any given Character in a given List of Characters
 
 **set_state()**
-Set placement of any given Character in a given List of Characters
+: Set placement of any given Character in a given List of Characters
 
 
 ## Unused Functions
@@ -147,6 +163,6 @@ Functions that I created thinking that it would be part of the solving process
 position_locator(), is_unique(), entry_patterns(), analyze_patterns()
 
 
-### Process Journal
+## Process Journal
 
 
