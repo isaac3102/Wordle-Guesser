@@ -5,11 +5,6 @@ use std::thread;
 use std::sync::Arc;
 use wordle_guesser::{Character, main_selector, read_file};
 
-// Define the greet function
-async fn greet() -> impl Responder {
-    HttpResponse::Ok().body("Hello from Rust!")
-}
-
 // Main function to run the HTTP server
 /* #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -25,8 +20,7 @@ async fn main() -> std::io::Result<()> {
 
 fn main() {
     let content = Arc::new(read_file().unwrap());
-    let ranking = Arc::new(analyze_contents(Arc::clone(&content)));
-    main_selector(content, ranking, "hello".to_string());
+    main_selector(content, "after".to_string());
 
 
     /* let handle = thread::spawn(move || {

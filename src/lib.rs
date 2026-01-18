@@ -99,6 +99,7 @@ pub fn read_file() -> Result<String> {
     Ok(contents)
 }
 
+// not used currently
 // analyze_contents function to analyze character frequency and ranking
 pub fn analyze_contents(data: Arc<String>) -> [u8; 26] {
 
@@ -140,6 +141,7 @@ pub fn analyze_contents(data: Arc<String>) -> [u8; 26] {
 
 }
 
+// create list of characters based on placement
 fn create_list(placement: Placement, character_list: [Character;26]) -> Vec<char> {
     let mut results: Vec<char> = Vec::new();
     for char_struct in character_list.iter() {
@@ -149,6 +151,7 @@ fn create_list(placement: Placement, character_list: [Character;26]) -> Vec<char
     } return results;
 }
 
+// count character appearances in remaining possible words
 fn char_appearances(data:Arc<String>, character_list: [Character;26], formed_word: [char;5], attempted_characters: HashMap<char, Vec<usize>>) -> HashMap<char, u16> {
     let mut results: HashMap<char, u16> = HashMap::new();
     let absent_chars = create_list(Placement::Absent, character_list.clone());
@@ -197,35 +200,21 @@ fn char_appearances(data:Arc<String>, character_list: [Character;26], formed_wor
 }
 
 // main_selector function to select main characters (currently a placeholder)
-pub fn main_selector(data: Arc<String>, ranking: Arc<[u8; 26]>, answer: String) {
+pub fn main_selector(data: Arc<String>, answer: String) {
     
-    /* 
-    
-    Takes in an answer string that will be used to check the correctness of guesses.
-
-    two arrays:
-    choice: [Character; 26] - represents all possible characters (a-z) with their placement status and index.
-    word: [Character; 5] - represents the current guessed word with its characters, placement status, and index.
-
-
-     */
     let mut character_list: [Character;26] = [Character::new('a', Placement::Unknown); 26];
     for i in 0..26 {
-        character_list[i as usize] = Character::new((ranking[i as usize] + b'a') as char, Placement::Unknown);
+        character_list[i as usize] = Character::new((i + b'a') as char, Placement::Unknown);
     }
     let mut formed_word: [char;5] = ['_';5];
     let mut attempted_characters: HashMap<char, Vec<usize>> = HashMap::new();
-    /* match form_word(data.clone(), character_list.clone(), [Character::new('s', Placement::Unknown, 0),
-    Character::new('a', Placement::Unknown, 1), Character::new('a', Placement::Unknown, 2),
-    Character::new('e', Placement::Unknown, 3), Character::new('s', Placement::Unknown, 4)]) {
-        Some(word) => println!("Formed word: {}", word),
-        None => println!("No word could be formed with the given characters."),
-    }    */
 
     let mut counter = 0;
 
     while formed_word != answer.chars().collect::<Vec<char>>()[..5] {
         let appearances = char_appearances(data.clone(), character_list.clone(), formed_word.clone(), attempted_characters.clone());
+        revise_placement(&mut character_list, appearances.clone());
+
         assign_weightage(&mut character_list, appearances);
 
         let first_suggestion = form_word(data.clone(), character_list.clone(), attempted_characters.clone(), formed_word.clone()).unwrap();
@@ -243,6 +232,7 @@ pub fn main_selector(data: Arc<String>, ranking: Arc<[u8; 26]>, answer: String) 
         counter += 1;
     }
 
+    println!("Final formed word: {:?}", String::from_iter(formed_word));
     println!("Solved the Wordle in {} attempts!", counter);
 
 }
@@ -265,6 +255,15 @@ fn check_answer(attempt: String, formed_word: &mut [char;5], character_list: &mu
     }
 }
 
+fn revise_placement(character_list: &mut [Character;26], appearances: HashMap<char, u16>) {
+    for char_struct in character_list.iter_mut() {
+        let count = appearances.get(&char_struct.get_character()).unwrap_or(&0);
+            if count == &0 {
+                char_struct.update_placement(Placement::Absent);
+    }
+}
+}
+
 // takes in list of character and their appearances, 
 fn assign_weightage(character_list: &mut [Character;26], appearances: HashMap<char, u16>) {
     let min = appearances.values().min().unwrap_or(&1);
@@ -276,19 +275,13 @@ fn assign_weightage(character_list: &mut [Character;26], appearances: HashMap<ch
             char_struct.update_weightage(0.0);
         } 
         else {
-            let count = appearances.get(&char_struct.get_character()).unwrap_or(&0);
-            if count == &0 {
-                char_struct.update_weightage(-1.0);
-                char_struct.update_placement(Placement::Absent);
-                continue;
-            } else {
+                let count = appearances.get(&char_struct.get_character()).unwrap_or(&0);
                 let weightage = (*count as f32 - *min as f32) / (*max as f32 - *min as f32);
                 char_struct.update_weightage(weightage);
             }
-            
         }
     }
-}
+
 
 /*
 
@@ -430,11 +423,11 @@ fn analyze_patterns(data: Arc<String>, ranking: [Character;26], permutation: &mu
     // base case
     if permutation.len() == 1{
         for count in 0..limiter {
-            if (ranking[count].get_placement() == Placement::Absent) {
+            if ranking[count].get_placement() == Placement::Absent {
                 continue;
             }
             let mut new_permutation: String = permutation.clone();
-            new_permutation.push((ranking[count].get_character() as char));
+            new_permutation.push(ranking[count].get_character() as char);
             match analyze_patterns(data.clone(), ranking.clone(), &mut new_permutation, limiter.clone()) {
                 Some(res) => {
                     results.extend(res);
