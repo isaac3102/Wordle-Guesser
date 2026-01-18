@@ -160,9 +160,33 @@ Smaller functions used to help the Main Functions work
 ## Unused Functions
 Functions that I created thinking that it would be part of the solving process
 
-position_locator(), is_unique(), entry_patterns(), analyze_patterns()
+position_locator(), is_unique(), entry_patterns(), analyze_patterns(), analyze_contents()
 
 
 ## Process Journal
+
+**Beginning of Project**
+
+Beginning the project, I thought that I should first look at the occurence rate and probability of letters that could appear in the word, as such I first began with making the analyze_contents() function which counts the number of times a letter appears.
+
+Since, that would mean that a word containing common letters would eliminate more words if the letter happens to be absent.
+
+Secondly, as words aren't random and patterns do emerge, I wanted to analyze common patterns, as such I created the entry_patterns() and analyze_patterns() function. However, I did not get any where after that.
+
+**Update 1**
+
+Created the Character *struct* and Placement *enum*, to keep track of letter information. At first, each Character held an index value that would tell the function where it should be if its Correct.
+
+However, I very soon realised that it was not very smart as some words contain two of the same letters. e.g. 'hello'.
+
+
+**Update 2**
+
+Shifted to a value-based suggestion system, based on the strategy for wordle which is to eliminate letters so that it would be easier to form a word from the remaining letters. As such, I did not want the algorithm to tunnel vision when it knows some Correct characters. Using a value-based system I'll be able to select the most valuable word to play next.
+
+I realised this method was also not that fool-proof, sometimes some combinations of letters will result in a single word. Therefore, before I try and create a list of suggested words, I created a function to attempt to form a word. If a single word comes out, then it'll use that word.
+
+In this update, I can safely say that the algorithm can guess the word. However, it can be improved, I'm thinking of implementing a pattern recognizer together with forming the word/suggesting the word.
+
 
 
