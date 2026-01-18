@@ -5,6 +5,8 @@ use std::thread;
 use std::sync::Arc;
 use wordle_guesser::{Character, main_selector, read_file};
 
+mod test;
+
 // Main function to run the HTTP server
 /* #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -19,7 +21,10 @@ async fn main() -> std::io::Result<()> {
 } */
 
 fn main() {
-    let content = read_file().unwrap();
-    main_selector(content, "ennui".to_string());
+    //let content = read_file().unwrap();
+    //main_selector(content, "tribe".to_string());
+
+    test::test_words();
+
     
 }

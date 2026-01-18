@@ -200,7 +200,7 @@ fn char_appearances(data:String, character_list: [Character;26], formed_word: [c
 }
 
 // main_selector function to select main characters (currently a placeholder)
-pub fn main_selector(data: String, answer: String) {
+pub fn main_selector(data: String, answer: String) -> i32 {
     
     let mut character_list: [Character;26] = [Character::new('a', Placement::Unknown); 26];
     for i in 0..26 {
@@ -225,15 +225,24 @@ pub fn main_selector(data: String, answer: String) {
         } else {
             println!("Multiple possible words can be formed.");
             let suggestions = provide_suggestions(data.clone(), character_list.clone(), &mut attempted_characters);
-            let weighted_suggestion = suggestions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).unwrap().0.clone();
-           println!("Suggested word: {}", weighted_suggestion);
+            let weighted_suggestion = match suggestions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap()) {
+                Some(entry) => entry.0.clone(),
+                None => {
+                    println!("No suggestions found!");
+                    continue; // or break, or return an error
+                }
+            };
+            println!("Suggested word: {}", weighted_suggestion);
             check_answer(weighted_suggestion, &mut formed_word, &mut character_list, &mut attempted_characters, answer.clone());
-        }
+        
+            }
         counter += 1;
     }
 
     println!("Final formed word: {:?}", String::from_iter(formed_word));
     println!("Solved the Wordle in {} attempts!", counter);
+
+    return counter;
 
 }
 
@@ -273,11 +282,14 @@ fn assign_weightage(character_list: &mut [Character;26], appearances: HashMap<ch
             char_struct.update_weightage(-1.0);
         } else if char_struct.get_placement() == Placement::Correct {
             char_struct.update_weightage(0.0);
-        } 
+        } else if max == min {
+            char_struct.update_weightage(1.0);
+        }
         else {
                 let count = appearances.get(&char_struct.get_character()).unwrap_or(&0);
                 let weightage = (*count as f32 - *min as f32) / (*max as f32 - *min as f32);
                 char_struct.update_weightage(weightage);
+                
             }
         }
     }
@@ -380,7 +392,6 @@ fn form_word(data: String, character_list: [Character;26], attempted: HashMap<ch
             }
            }
     }
-    println!("Possible words formed: {:?}", suggestions);
     return Some(suggestions);
 }
 

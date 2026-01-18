@@ -190,4 +190,4 @@ In this update, I can safely say that the algorithm can guess the word. However,
 
 note: After fiddling around with it, I realised that the form_word function was not properly forming words (it made words that did not have present words inside)
 
-
+note: Encountered another issue, where max == min and it resulted in NaN. Changed so that it will assign a value of 1.0 if it happens, additionally handled errors for weighted_suggestions
