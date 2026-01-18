@@ -333,12 +333,18 @@ fn provide_suggestions(data: Arc<String>, character_list: [Character;26], attemp
 fn form_word(data: Arc<String>, character_list: [Character;26], attempted: HashMap<char, Vec<usize>>, formed_word: [char;5]) -> Option<Vec<String>> {
     let mut suggestions: Vec<String> = Vec::new();
     let present_chars = create_list(Placement::Present, character_list.clone());
+    println!("character list: {:?}", character_list);
+    println!("Present chars: {:?}", present_chars);
     let correct_chars = create_list(Placement::Correct, character_list.clone());
     let absent_chars = create_list(Placement::Absent, character_list.clone());
     for word in data.lines() {
-        if word.chars().any(|c| absent_chars.contains(&c)) {
+        if word.chars().any(|c| absent_chars.contains(&c)) { // if absent character found, skip
             continue;
-        } else {
+        } 
+        else if present_chars.len() > 0 && !present_chars.iter().all(|c| word.contains(*c)) {
+            continue;
+        }
+        else {
             let mut skip_word = false;
             // check first for correct placements
             if correct_chars.len() > 0 {
@@ -376,6 +382,7 @@ fn form_word(data: Arc<String>, character_list: [Character;26], attempted: HashM
             }
            }
     }
+    println!("Possible words formed: {:?}", suggestions);
     return Some(suggestions);
 }
 

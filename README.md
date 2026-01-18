@@ -188,5 +188,6 @@ I realised this method was also not that fool-proof, sometimes some combinations
 
 In this update, I can safely say that the algorithm can guess the word. However, it can be improved, I'm thinking of implementing a pattern recognizer together with forming the word/suggesting the word.
 
+note: After fiddling around with it, I realised that the form_word function was not properly forming words (it made words that did not have present words inside)
 
 
