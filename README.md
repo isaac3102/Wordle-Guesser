@@ -1,5 +1,5 @@
 # Wordle-Guesser
-Suggest words until the wordle is solved.
+Interacts with the wordle website, to guess the daily wordle till its solved
 
 ## Background
 Wordle is a daily guessing game in which users will have to try and guess a 5 letter word with a limited amount of tries. 
@@ -193,3 +193,8 @@ note: After fiddling around with it, I realised that the form_word function was 
 note: Encountered another issue, where max == min and it resulted in NaN. Changed so that it will assign a value of 1.0 if it happens, additionally handled errors for weighted_suggestions
 
 note: Final change would be to add graphical UI and testing mechanisms
+
+**Update 3**
+
+added Chromedriver and thirtyfour to interact with the wordle website
+

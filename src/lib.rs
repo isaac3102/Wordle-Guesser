@@ -1,10 +1,7 @@
-use std::env; 
 use std::fs;
-use std::hash::Hash;
-use std::vec; // file reader lib
 use anyhow::{anyhow, Result};
-use std::sync::Arc;
 use std::collections::HashMap;
+use std::env;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Placement {
@@ -48,7 +45,7 @@ impl Character {
 
 }
 
-fn set_state(character_list: &mut [Character;26], character: char, placement: Placement) {
+pub fn set_state(character_list: &mut [Character;26], character: char, placement: Placement) {
     for char_struct in character_list.iter_mut() {
         if char_struct.get_character() == character {
             char_struct.update_placement(placement);
@@ -57,7 +54,7 @@ fn set_state(character_list: &mut [Character;26], character: char, placement: Pl
     }
 }
 
-fn get_state(character_list: &[Character;26], character: char) -> Option<Placement> {
+pub fn get_state(character_list: &[Character;26], character: char) -> Option<Placement> {
     for char_struct in character_list.iter() {
         if char_struct.get_character() == character {
             return Some(char_struct.get_placement());
@@ -66,7 +63,7 @@ fn get_state(character_list: &[Character;26], character: char) -> Option<Placeme
     None
 }
 
-fn get_weightage(character_list: &[Character;26], character: char) -> Option<f32> {
+pub fn get_weightage(character_list: &[Character;26], character: char) -> Option<f32> {
     for char_struct in character_list.iter() {
         if char_struct.get_character() == character {
             return Some(char_struct.get_weightage());
@@ -99,48 +96,6 @@ pub fn read_file() -> Result<String> {
     Ok(contents)
 }
 
-// not used currently
-// analyze_contents function to analyze character frequency and ranking
-pub fn analyze_contents(data: String) -> [u8; 26] {
-
-    // b'a' -> b means byte value of 'a'
-
-    let mut char_count: [u16; 26] = [0; 26];
-    let mut char_ranking: [u8; 26] = [0; 26];
-
-    for i in 0..26 {
-        char_ranking[i as usize] = i;
-    }
-    /* Loop through each character */
-    for line in data.lines() {
-        for character in line.chars() {
-            if character >= 'a' && character <= 'z' {
-                let idx = (character as u8 - b'a') as usize;
-                char_count[idx] += 1;
-            }
-            // (character as u8) % 97
-            // as u8 converts it to unicode (as turns primitive types to other primitive types)
-           
-        }
-    }
-    for count in 0..26 {
-        let mut principal:u16 = char_count[count];
-        let mut swap = count;
-        for check in count..26 {
-            if principal < char_count[check] {
-                principal = char_count[check];
-                swap = check;
-            }
-        }
-        if swap != count {
-            char_ranking.swap(count, swap);
-            char_count.swap(count, swap);
-        }
-    }
-    return char_ranking;
-
-}
-
 // create list of characters based on placement
 fn create_list(placement: Placement, character_list: [Character;26]) -> Vec<char> {
     let mut results: Vec<char> = Vec::new();
@@ -152,7 +107,7 @@ fn create_list(placement: Placement, character_list: [Character;26]) -> Vec<char
 }
 
 // count character appearances in remaining possible words
-fn char_appearances(data:String, character_list: [Character;26], formed_word: [char;5], attempted_characters: HashMap<char, Vec<usize>>) -> HashMap<char, u16> {
+pub fn char_appearances(data:String, character_list: [Character;26], formed_word: [char;5], attempted_characters: HashMap<char, Vec<usize>>) -> HashMap<char, u16> {
     let mut results: HashMap<char, u16> = HashMap::new();
     let absent_chars = create_list(Placement::Absent, character_list.clone());
     let correct_chars = create_list(Placement::Correct, character_list.clone());
@@ -249,7 +204,7 @@ pub fn main_selector(data: String, answer: String) -> i32 {
 
 fn check_answer(attempt: String, formed_word: &mut [char;5], character_list: &mut [Character;26], attempted_characters: &mut HashMap<char, Vec<usize>>, answer: String){
     for (i, c) in attempt.chars().enumerate() {
-        if answer.contains(c) {
+        if answer.contains(c) { 
             if answer.chars().nth(i).unwrap() == c {
                  set_state(character_list, c, Placement::Correct);
                 formed_word[i] = c;
@@ -265,7 +220,7 @@ fn check_answer(attempt: String, formed_word: &mut [char;5], character_list: &mu
     }
 }
 
-fn revise_placement(character_list: &mut [Character;26], appearances: HashMap<char, u16>) {
+pub fn revise_placement(character_list: &mut [Character;26], appearances: HashMap<char, u16>) {
     for char_struct in character_list.iter_mut() {
         let count = appearances.get(&char_struct.get_character()).unwrap_or(&0);
             if count == &0 {
@@ -275,7 +230,7 @@ fn revise_placement(character_list: &mut [Character;26], appearances: HashMap<ch
 }
 
 // takes in list of character and their appearances, 
-fn assign_weightage(character_list: &mut [Character;26], appearances: HashMap<char, u16>) {
+pub fn assign_weightage(character_list: &mut [Character;26], appearances: HashMap<char, u16>) {
     let min = appearances.values().min().unwrap_or(&1);
     let max = appearances.values().max().unwrap_or(&1);
     for char_struct in character_list.iter_mut() {
@@ -309,7 +264,7 @@ A unknown character will have a value between 0.0 and 1.0 based on its frequency
 
 Any word that contains duplicate characters e.g. hello will only count the weightage of each character once.
 */
-fn provide_suggestions(data: String, character_list: [Character;26], attempted_characters: &mut HashMap<char, Vec<usize>>) -> HashMap<String, f32> {
+pub fn provide_suggestions(data: String, character_list: [Character;26], attempted_characters: &mut HashMap<char, Vec<usize>>) -> HashMap<String, f32> {
     let mut suggestions: HashMap<String, f32> = HashMap::new();
     let present_chars = create_list(Placement::Present, character_list.clone());
     for word in data.lines() {
@@ -343,7 +298,7 @@ fn provide_suggestions(data: String, character_list: [Character;26], attempted_c
 
 
 // given a list of specific characters and their placements, form a word
-fn form_word(data: String, character_list: [Character;26], attempted: HashMap<char, Vec<usize>>, formed_word: [char;5]) -> Option<Vec<String>> {
+pub fn form_word(data: String, character_list: [Character;26], attempted: HashMap<char, Vec<usize>>, formed_word: [char;5]) -> Option<Vec<String>> {
     let mut suggestions: Vec<String> = Vec::new();
     let present_chars = create_list(Placement::Present, character_list.clone());
     let correct_chars = create_list(Placement::Correct, character_list.clone());
@@ -396,102 +351,5 @@ fn form_word(data: String, character_list: [Character;26], attempted: HashMap<ch
     return Some(suggestions);
 }
 
-// entry_pattern function to analyze patterns based on initial character
-pub fn entry_pattern(data: String, ranking: [Character; 26], initial: usize, limiter: usize) -> Result<HashMap<String, u16>>{
-    let permutation = ranking[initial].get_character().to_string(); 
-    let results = analyze_patterns(data, ranking, &mut permutation.to_string(), limiter).ok_or_else(|| anyhow!("Nothing Found"))?;
-    let max_entry = results.iter().max_by_key(|&(_, count)| count);
-    println!("Max Entry for initial {}: {:?}", permutation, max_entry);
-    for (word, count) in &results {
-        if is_unique(word.to_string()) {
-            if max_entry.is_some() && word.contains(max_entry.unwrap().0) {
-                println!("Unique word: {} with count {}", word, count);
-            }
-        }
-    }
-    Ok(results)
-}
 
-fn position_locator(word: String, character: char) -> Option<Character> {
-    for (i, c) in word.chars().enumerate() {
-        if c == character {
-            return Some(Character::new(c, Placement::Present));
-        }
-    } return None;
-}
-
-fn is_unique(word: String) -> bool {
-    let mut temp: Vec<char> = Vec::new();
-    for i in word.chars() {
-        if temp.contains(&i) {
-            return false;
-        } else {
-            temp.push(i);
-        }
-    } return true;
-}
-
-// recursive function to analyze patterns
-fn analyze_patterns(data: String, ranking: [Character;26], permutation: &mut String, limiter: usize) -> Option<HashMap<String, u16>>{
-
-    let mut results = HashMap::new();
-
-    // base case
-    if permutation.len() == 1{
-        for count in 0..limiter {
-            if ranking[count].get_placement() == Placement::Absent {
-                continue;
-            }
-            let mut new_permutation: String = permutation.clone();
-            new_permutation.push(ranking[count].get_character() as char);
-            match analyze_patterns(data.clone(), ranking.clone(), &mut new_permutation, limiter.clone()) {
-                Some(res) => {
-                    results.extend(res);
-                },
-                None => {
-                    continue;
-                },
-            }
-        }
-
-        return Some(results);
-        
-    }
-
-    // check appearances of permutation in data
-    let mut appearances: u16 = 0;
-    for word in data.lines() {
-        if word.contains(&*permutation) {
-            appearances += 1;
-        }
-    }
-
-    // base cases
-    if appearances == 0 {
-        return None
-    } else if appearances == 1 {
-        return Some(HashMap::from([(permutation.clone(), appearances)]));
-    } 
-    else {
-        for count in 0..limiter {
-            if ranking[count].get_placement() == Placement::Absent {
-                continue;
-            }
-            results.insert(permutation.clone(), appearances); 
-            let mut new_permutation: String = permutation.clone();
-            new_permutation.push(ranking[count].get_character() as char);
-            match analyze_patterns(data.clone(), ranking.clone(), &mut new_permutation, limiter.clone()) {
-                Some(res) => {
-                    results.extend(res);
-                },
-                None => {
-                    continue;
-                },
-            }
-        }
-        return Some(results);
-    }
-    
-
-}
 
