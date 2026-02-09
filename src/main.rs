@@ -7,19 +7,8 @@ use thirtyfour::Key;
 use tokio::time::Duration;
 use tokio::signal;
 use std::error::Error;
-
-// Main function to run the HTTP server
-/* #[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    let content = lib::read_file().unwrap();
-    analyze_contents(content);
-    HttpServer::new(|| {
-        App::new().route("/", web::get().to(greet)) // Route "/" to the greet function
-    })
-    .bind("127.0.0.1:8080")? // Bind the server to localhost:8080
-    .run()
-    .await
-} */
+use std::process::Command;
+use std::str;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
@@ -34,6 +23,10 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let mut attempted_characters: HashMap<char, Vec<usize>> = HashMap::new();
 
     let solved = false;
+
+    // Run chromedriver
+    let chromedriver = Command::new("./lib/chromedriver.exe")
+        .arg("--port=9515").spawn()?;
 
     // make initial connection to webdriver
     let caps = DesiredCapabilities::chrome();
