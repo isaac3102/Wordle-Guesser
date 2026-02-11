@@ -71,9 +71,13 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         // Loop of sending and ensuring its there
         for (i, letter) in suggested.chars().enumerate() {
             loop {
+                println!("trying {:?}", letter);
                 let selector = format!("[data-key='{}']", letter);
-                driver.find(By::Css(&selector))
-                .await?.click().await?;
+                let letter_button = driver.query(By::Css(&selector))
+                .first().await?;
+                
+                letter_button.wait_until().clickable().await?;
+                letter_button.click().await?;
 
                 let selector = format!("[aria-label^='{}']", (i+1));
                 let letter_box = row.query(By::Css(selector)).first().await?;
