@@ -25,13 +25,9 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let solved = false;
 
     // Run chromedriver
-    let chromedriver = Command::new("./lib/chromedriver.exe")
-        .arg("--port=9515").spawn()?;
-
-    // make initial connection to webdriver
-    let caps = DesiredCapabilities::chrome();
-    // Create struct focused on chrome, providing useful specific helpers
-    let driver = WebDriver::new("http://localhost:9515", caps).await?;
+    let mut caps = DesiredCapabilities::chrome(); // defines browser configurations
+    let driver = WebDriver::managed(caps).await?;
+     // Create struct focused on chrome, providing useful specific helpers
 
     // Navigate to specified page!
     driver.goto("https://www.nytimes.com/games/wordle/index.html").await?;
@@ -142,7 +138,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
 
     }
     
-    let _ = driver.leak();
+    let _ = driver.leak(); // prevent closure
 
     Ok(())
 }
